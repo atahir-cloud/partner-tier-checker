@@ -79,6 +79,60 @@ function pageShell(extraStyles = '') {
     .contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; }
     .contact-grid .item { color: rgba(255,255,255,0.9); font-size: 12px; }
     .contact-grid .item strong { display: block; color: white; font-size: 13px; margin-bottom: 3px; }
+    .testimonials-wrap {
+      z-index: 1;
+      max-width: 900px;
+      width: 92%;
+      margin: 8px 0 32px;
+      text-align: center;
+    }
+    .testimonials-heading {
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin: 0 0 16px;
+      opacity: 0.9;
+    }
+    .testimonials-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .testimonial-card {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 20px 18px;
+      flex: 1 1 260px;
+      max-width: 280px;
+      text-align: left;
+    }
+    .testimonial-card .quote-mark {
+      font-size: 34px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1;
+      font-family: Georgia, serif;
+      margin-bottom: 4px;
+    }
+    .testimonial-card .t-quote {
+      color: rgba(255,255,255,0.95);
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin: 0 0 14px;
+    }
+    .testimonial-card .t-name {
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+      margin: 0;
+    }
+    .testimonial-card .t-agency {
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      margin: 2px 0 0;
+    }
     ${extraStyles}
   `;
 }
@@ -117,6 +171,43 @@ const footerHtml = `
       <div class="item"><strong>Partner Manager</strong>agencies@cloudways.com</div>
       <div class="item"><strong>Success Manager</strong>success@cloudways.com</div>
       <div class="item"><strong>Billing Team</strong>billing@cloudways.com</div>
+    </div>
+  </div>
+`;
+
+const TESTIMONIALS = [
+  {
+    quote: "Being part of the partnership program makes me feel valued. I appreciate the value it provides with the advanced customer support and my own dedicated partnership manager. I look forward to growing to the next tier — hopefully soon!",
+    name: "Michelle Coe",
+    agency: "BlueSkyPhoenix LLC",
+    location: "Northern Virginia, USA"
+  },
+  {
+    quote: "It's great to be part of a program that actually understands agency needs. The resources, support, and visibility Cloudways offers through the partnership have helped us grow our hosting business and increase client confidence. It's a long-term win.",
+    name: "Nick Baudoin",
+    agency: "Alkali",
+    location: "Houston, USA"
+  },
+  {
+    quote: "It's great to see that Cloudways cares about its partners and offers co-marketing opportunities. I also enjoy the support we receive, which makes Cloudways even better.",
+    name: "Art Karapetov",
+    agency: "Consensus Creative",
+    location: "Toronto, Canada"
+  }
+];
+
+const testimonialsHtml = `
+  <div class="testimonials-wrap">
+    <p class="testimonials-heading">What Our Partners Say</p>
+    <div class="testimonials-row">
+      ${TESTIMONIALS.map((t) => `
+        <div class="testimonial-card">
+          <div class="quote-mark">&ldquo;</div>
+          <p class="t-quote">${t.quote}</p>
+          <p class="t-name">${t.name}</p>
+          <p class="t-agency">${t.agency} &middot; ${t.location}</p>
+        </div>
+      `).join('')}
     </div>
   </div>
 `;
@@ -202,6 +293,7 @@ const formPage = `
       <button type="submit" id="submitBtn">Check My Tier</button>
     </form>
   </div>
+  ${testimonialsHtml}
   ${footerHtml}
   <script>
     document.getElementById('tierForm').addEventListener('submit', function (e) {

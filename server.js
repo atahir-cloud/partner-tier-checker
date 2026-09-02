@@ -76,18 +76,6 @@ function pageShell(extraStyles = '') {
     }
     .apply-btn { background: white; color: #6b2d8c; }
     .directory-btn { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.4); }
-    @media (min-width: 900px) {
-      .footer-strip .apply-row {
-        position: fixed;
-        right: 24px;
-        top: 50%;
-        transform: translateY(-50%);
-        flex-direction: column;
-        margin-bottom: 0;
-        z-index: 2;
-      }
-      .footer-strip .apply-row a { width: 170px; text-align: center; }
-    }
     .contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; }
     .contact-grid .item { color: rgba(255,255,255,0.9); font-size: 12px; }
     .contact-grid .item strong { display: block; color: white; font-size: 13px; margin-bottom: 3px; }

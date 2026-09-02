@@ -40,7 +40,7 @@ const formPage = `
       border-radius: 20px;
       margin-bottom: 16px;
     }
-    h1 { margin: 0 0 8px; font-size: 26px; color: #1a1a2e; }
+    h1 { margin: 0 0 8px; font-size: 22px; color: #1a1a2e; }
     p { color: #666; font-size: 14px; margin-bottom: 28px; }
     input {
       padding: 14px;
@@ -88,7 +88,7 @@ const formPage = `
   </div>
   <div class="card">
     <span class="badge">CLOUDWAYS AGENCY PARTNERS</span>
-    <h1>Partner Tier Checker</h1>
+    <h1>Agency Partner Program Tier Checker</h1>
     <p>Enter your monthly hosting spend to see your partner tier &amp; benefits</p>
     <form method="POST" action="/check">
       <input type="number" name="spend" placeholder="e.g. 250" required />
@@ -232,6 +232,18 @@ const server = http.createServer((req, res) => {
               text-decoration: none;
             }
             .connect-btn:hover { background: #f0673f; }
+            .msg-box {
+              width: 100%;
+              margin-top: 24px;
+              padding: 12px;
+              font-size: 14px;
+              font-family: inherit;
+              border: 2px solid #e5e0f0;
+              border-radius: 8px;
+              resize: vertical;
+              min-height: 70px;
+            }
+            .msg-box:focus { outline: none; border-color: #ff7a59; }
             a {
               display: inline-block;
               margin-top: 24px;
@@ -268,7 +280,7 @@ const server = http.createServer((req, res) => {
             <ul>
               ${result.benefits.map((b) => `<li>${b}</li>`).join('')}
             </ul>
-            <a href="mailto:agencies@cloudways.com?subject=Connect%20with%20Partner%20Manager%20-%20${result.tier}%20Tier" class="connect-btn">Connect with Partner Manager</a>
+            <a href="https://calendly.com/atahir-yts/let-s-connect" target="_blank" class="connect-btn">Connect with Partner Manager</a>
             <br />
             <a href="/">&larr; Check another amount</a>
           </div>

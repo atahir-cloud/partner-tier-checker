@@ -203,12 +203,6 @@ const TESTIMONIALS = [
     name: "Nick Baudoin",
     agency: "Alkali",
     location: "Houston, USA"
-  },
-  {
-    quote: "It's great to see that Cloudways cares about its partners and offers co-marketing opportunities. I also enjoy the support we receive, which makes Cloudways even better.",
-    name: "Art Karapetov",
-    agency: "Consensus Creative",
-    location: "Toronto, Canada"
   }
 ];
 

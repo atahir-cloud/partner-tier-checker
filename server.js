@@ -76,6 +76,18 @@ function pageShell(extraStyles = '') {
     }
     .apply-btn { background: white; color: #6b2d8c; }
     .directory-btn { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.4); }
+    @media (min-width: 900px) {
+      .footer-strip .apply-row {
+        position: fixed;
+        right: 24px;
+        top: 50%;
+        transform: translateY(-50%);
+        flex-direction: column;
+        margin-bottom: 0;
+        z-index: 2;
+      }
+      .footer-strip .apply-row a { width: 170px; text-align: center; }
+    }
     .contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; }
     .contact-grid .item { color: rgba(255,255,255,0.9); font-size: 12px; }
     .contact-grid .item strong { display: block; color: white; font-size: 13px; margin-bottom: 3px; }
@@ -114,9 +126,9 @@ const footerHtml = `
       <a class="directory-btn" href="https://www.cloudways.com/en/agency-partner-directory.php" target="_blank">View Agency Directory</a>
     </div>
     <div class="contact-grid">
-      <div class="item"><strong>Billing Team</strong>billing@cloudways.com</div>
-      <div class="item"><strong>Success Manager</strong>success@cloudways.com</div>
       <div class="item"><strong>Partner Manager</strong>agencies@cloudways.com</div>
+      <div class="item"><strong>Success Manager</strong>success@cloudways.com</div>
+      <div class="item"><strong>Billing Team</strong>billing@cloudways.com</div>
     </div>
   </div>
 `;
@@ -219,7 +231,7 @@ const formPage = `
 // This function contains our tier rules -- taken from the real
 // Cloudways Agency Partner Program Guide.
 function getTier(spend) {
-  if (spend > 2500) {
+  if (spend >= 2500) {
     return {
       tier: 'Platinum',
       icon: '💎',
@@ -279,15 +291,17 @@ function getTier(spend) {
   }
 }
 
+const TIER_COLORS = { Bronze: '#cd7f32', Silver: '#95a5a6', Gold: '#f1c40f', Platinum: '#8e44ad' };
+
 // Works out how close the spend is to the NEXT tier up, so we can show
 // a progress bar. Returns null when already at the top tier (Platinum).
 function getProgress(spend, tier) {
   if (tier === 'Bronze') {
-    return { percent: Math.min(100, (spend / 100) * 100), remaining: 100 - spend, nextTier: 'Silver' };
+    return { percent: Math.min(100, (spend / 100) * 100), remaining: 100 - spend, nextTier: 'Silver', nextColor: TIER_COLORS.Silver };
   } else if (tier === 'Silver') {
-    return { percent: Math.min(100, ((spend - 100) / (500 - 100)) * 100), remaining: 500 - spend, nextTier: 'Gold' };
+    return { percent: Math.min(100, ((spend - 100) / (500 - 100)) * 100), remaining: 500 - spend, nextTier: 'Gold', nextColor: TIER_COLORS.Gold };
   } else if (tier === 'Gold') {
-    return { percent: Math.min(100, ((spend - 500) / (2500 - 500)) * 100), remaining: 2501 - spend, nextTier: 'Platinum' };
+    return { percent: Math.min(100, ((spend - 500) / (2500 - 500)) * 100), remaining: 2500 - spend, nextTier: 'Platinum', nextColor: TIER_COLORS.Platinum };
   }
   return null; // Platinum -- already at the top!
 }
@@ -308,13 +322,14 @@ const server = http.createServer((req, res) => {
       const spend = Number(new URLSearchParams(body).get('spend')) || 0;
       const result = getTier(spend);
       const progress = getProgress(spend, result.tier);
+      const progressColor = progress ? progress.nextColor : result.color;
 
       const progressHtml = progress
         ? `
           <div class="progress-wrap">
             <p class="progress-label">🎯 <strong>$${progress.remaining}</strong> away from <strong>${progress.nextTier}</strong></p>
             <div class="progress-track">
-              <div class="progress-fill" style="width: ${progress.percent}%; background: ${result.color};"></div>
+              <div class="progress-fill" style="width: ${progress.percent}%; background: ${progressColor};"></div>
             </div>
           </div>
         `
@@ -357,13 +372,13 @@ const server = http.createServer((req, res) => {
               }
               .progress-wrap {
                 margin-bottom: 24px;
-                background: linear-gradient(135deg, ${result.color}18, ${result.color}08);
-                border: 1px solid ${result.color}40;
+                background: linear-gradient(135deg, ${progressColor}22, ${progressColor}0a);
+                border: 1px solid ${progressColor}55;
                 border-radius: 12px;
                 padding: 14px 16px;
               }
               .progress-label { font-size: 14px; color: #444; margin: 0 0 10px; }
-              .progress-label strong { color: ${result.color}; }
+              .progress-label strong { color: ${progressColor}; }
               .progress-track { background: #f0f0f0; border-radius: 10px; height: 10px; overflow: hidden; }
               .progress-fill { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
               .top-tier-msg { font-size: 14px; color: #8e44ad; font-weight: 600; margin-bottom: 24px; }

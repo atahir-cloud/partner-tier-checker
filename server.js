@@ -2,8 +2,8 @@
 // that lets us create a server without installing anything extra.
 const http = require('http');
 
-// Shared page-background + top logo + outer title, used on both pages.
-function pageShell(innerHtml, extraStyles = '') {
+// Shared styles used on both pages.
+function pageShell(extraStyles = '') {
   return `
     * { box-sizing: border-box; }
     body {
@@ -15,8 +15,20 @@ function pageShell(innerHtml, extraStyles = '') {
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, #2d1b69 0%, #6b2d8c 50%, #d94f3d 100%);
-      padding: 40px 0;
+      padding: 40px 16px;
+      position: relative;
+      overflow-x: hidden;
     }
+    .bg-shape {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(40px);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .bg-shape.one { width: 300px; height: 300px; background: rgba(255,122,89,0.25); top: -80px; right: -80px; }
+    .bg-shape.two { width: 260px; height: 260px; background: rgba(241,196,15,0.18); bottom: -60px; left: -60px; }
+    .bg-shape.three { width: 200px; height: 200px; background: rgba(255,255,255,0.10); top: 40%; right: 8%; }
     .top-logo {
       position: fixed;
       top: 24px;
@@ -24,29 +36,65 @@ function pageShell(innerHtml, extraStyles = '') {
       display: flex;
       align-items: center;
       gap: 10px;
+      z-index: 2;
     }
     .top-logo .logo-text-block { display: flex; flex-direction: column; line-height: 1.1; }
     .top-logo .logo-main { font-size: 17px; font-weight: 800; color: white; letter-spacing: 0.5px; }
     .top-logo .logo-sub { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.75); letter-spacing: 0.3px; }
-    .page-title {
+    .page-title { text-align: center; margin-bottom: 8px; z-index: 1; }
+    .page-title h2 { color: white; font-size: 34px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.5px; }
+    .page-title p { color: rgba(255,255,255,0.8); font-size: 14px; margin: 0; }
+    .how-note {
+      color: rgba(255,255,255,0.75);
+      font-size: 12.5px;
       text-align: center;
+      max-width: 420px;
+      margin: 6px 0 24px;
+      z-index: 1;
+    }
+    .card { position: relative; z-index: 1; }
+    .footer-strip {
+      z-index: 1;
+      margin-top: 32px;
+      max-width: 560px;
+      width: 90%;
+      text-align: center;
+    }
+    .footer-strip .apply-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
       margin-bottom: 24px;
+      flex-wrap: wrap;
     }
-    .page-title h2 {
-      color: white;
-      font-size: 34px;
-      font-weight: 800;
-      margin: 0 0 6px;
-      letter-spacing: -0.5px;
+    .footer-strip .apply-row a {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
     }
-    .page-title p {
-      color: rgba(255,255,255,0.8);
-      font-size: 14px;
-      margin: 0;
+    .apply-btn { background: white; color: #6b2d8c; }
+    .directory-btn { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.4); }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px;
     }
+    .contact-grid .item { color: rgba(255,255,255,0.9); font-size: 12px; }
+    .contact-grid .item strong { display: block; color: white; font-size: 13px; margin-bottom: 3px; }
     ${extraStyles}
   `;
 }
+
+const bgShapesHtml = `
+  <div class="bg-shape one"></div>
+  <div class="bg-shape two"></div>
+  <div class="bg-shape three"></div>
+`;
 
 const topLogoHtml = `
   <div class="top-logo">
@@ -60,8 +108,24 @@ const topLogoHtml = `
 
 const pageTitleHtml = `
   <div class="page-title">
-    <h2>Tier Calculator</h2>
+    <h2>Agency Tier Calculator</h2>
     <p>Cloudways Agency Partner Program</p>
+  </div>
+  <p class="how-note">Tiers are based on your monthly hosting spend on Cloudways &mdash; the more you host, the more you unlock. Tiers update automatically as your spend grows.</p>
+`;
+
+const footerHtml = `
+  <div class="footer-strip">
+    <div class="apply-row">
+      <a class="apply-btn" href="https://www.cloudways.com/en/agency-partner-program.php" target="_blank">Not a partner yet? Apply now</a>
+      <a class="directory-btn" href="https://www.cloudways.com/en/agency-partner-directory.php" target="_blank">View Agency Directory</a>
+    </div>
+    <div class="contact-grid">
+      <div class="item"><strong>Technical Support</strong>Live Chat or Support Ticket</div>
+      <div class="item"><strong>Billing Team</strong>billing@cloudways.com</div>
+      <div class="item"><strong>Success Manager</strong>success@cloudways.com</div>
+      <div class="item"><strong>Partner Marketing Manager</strong>agencies@cloudways.com</div>
+    </div>
   </div>
 `;
 
@@ -72,13 +136,13 @@ const formPage = `
 <head>
   <title>Cloudways Partner Tier Checker</title>
   <style>
-    ${pageShell('', `
+    ${pageShell(`
       .card {
         background: white;
-        padding: 48px 40px;
+        padding: 48px 44px;
         border-radius: 16px;
         box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-        max-width: 420px;
+        max-width: 520px;
         width: 90%;
         text-align: center;
       }
@@ -93,7 +157,7 @@ const formPage = `
         border-radius: 20px;
         margin-bottom: 16px;
       }
-      h1 { margin: 0 0 8px; font-size: 22px; color: #1a1a2e; }
+      h1 { margin: 0 0 8px; font-size: 24px; color: #1a1a2e; }
       p.sub { color: #666; font-size: 14px; margin-bottom: 28px; }
       input {
         padding: 14px;
@@ -134,6 +198,7 @@ const formPage = `
   </style>
 </head>
 <body>
+  ${bgShapesHtml}
   ${topLogoHtml}
   ${pageTitleHtml}
   <div class="card">
@@ -145,6 +210,7 @@ const formPage = `
       <button type="submit" id="submitBtn">Check My Tier</button>
     </form>
   </div>
+  ${footerHtml}
   <script>
     document.getElementById('tierForm').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -270,13 +336,13 @@ const server = http.createServer((req, res) => {
         <head>
           <title>Your Partner Tier</title>
           <style>
-            ${pageShell('', `
+            ${pageShell(`
               .card {
                 background: white;
-                padding: 44px 40px;
+                padding: 44px 44px;
                 border-radius: 16px;
                 box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-                max-width: 440px;
+                max-width: 520px;
                 width: 90%;
                 text-align: center;
                 animation: fadeInUp 0.5s ease-out;
@@ -340,6 +406,7 @@ const server = http.createServer((req, res) => {
                 height: 8px;
                 opacity: 0.9;
                 animation: fall linear forwards;
+                z-index: 3;
               }
               @keyframes fall {
                 to { transform: translateY(110vh) rotate(360deg); opacity: 0.3; }
@@ -348,6 +415,7 @@ const server = http.createServer((req, res) => {
           </style>
         </head>
         <body>
+          ${bgShapesHtml}
           ${topLogoHtml}
           ${pageTitleHtml}
           <div class="card">
@@ -363,6 +431,7 @@ const server = http.createServer((req, res) => {
             <br />
             <a class="back" href="/">&larr; Check another amount</a>
           </div>
+          ${footerHtml}
           <script>
             document.getElementById('shareBtn').addEventListener('click', function () {
               navigator.clipboard.writeText(${JSON.stringify(shareText)}).then(() => {

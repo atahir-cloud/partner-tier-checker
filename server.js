@@ -2,69 +2,21 @@
 // that lets us create a server without installing anything extra.
 const http = require('http');
 
-// This is the webpage (HTML) that we will show when someone visits our site.
-// It's just a title, an input box, and a button.
-const formPage = `
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Cloudways Partner Tier Checker</title>
-  <style>
+// Shared page-background + top logo + outer title, used on both pages.
+function pageShell(innerHtml, extraStyles = '') {
+  return `
     * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
       margin: 0;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, #2d1b69 0%, #6b2d8c 50%, #d94f3d 100%);
+      padding: 40px 0;
     }
-    .card {
-      background: white;
-      padding: 48px 40px;
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-      max-width: 420px;
-      width: 90%;
-      text-align: center;
-    }
-    .badge {
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #6b2d8c;
-      background: #f3ecfa;
-      padding: 6px 14px;
-      border-radius: 20px;
-      margin-bottom: 16px;
-    }
-    h1 { margin: 0 0 8px; font-size: 22px; color: #1a1a2e; }
-    p { color: #666; font-size: 14px; margin-bottom: 28px; }
-    input {
-      padding: 14px;
-      font-size: 16px;
-      width: 100%;
-      border: 2px solid #e5e0f0;
-      border-radius: 8px;
-      text-align: center;
-    }
-    input:focus { outline: none; border-color: #ff7a59; }
-    button {
-      margin-top: 16px;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: 600;
-      width: 100%;
-      background: #ff7a59;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-    button:hover { background: #f0673f; }
     .top-logo {
       position: fixed;
       top: 24px;
@@ -76,9 +28,27 @@ const formPage = `
     .top-logo .logo-text-block { display: flex; flex-direction: column; line-height: 1.1; }
     .top-logo .logo-main { font-size: 17px; font-weight: 800; color: white; letter-spacing: 0.5px; }
     .top-logo .logo-sub { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.75); letter-spacing: 0.3px; }
-  </style>
-</head>
-<body>
+    .page-title {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .page-title h2 {
+      color: white;
+      font-size: 34px;
+      font-weight: 800;
+      margin: 0 0 6px;
+      letter-spacing: -0.5px;
+    }
+    .page-title p {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+      margin: 0;
+    }
+    ${extraStyles}
+  `;
+}
+
+const topLogoHtml = `
   <div class="top-logo">
     <svg width="26" height="19" viewBox="0 0 28 20"><path d="M7 16C3.5 16 1 13.5 1 10.5C1 7.8 3 5.6 5.6 5.2C6.4 2.5 8.9 0.7 11.8 0.7C14.9 0.7 17.5 2.8 18.1 5.7C21 6 23.3 8.4 23.3 11.3C23.3 14 21 16 18.3 16H7Z" fill="white"/></svg>
     <div class="logo-text-block">
@@ -86,15 +56,104 @@ const formPage = `
       <span class="logo-sub">by DigitalOcean</span>
     </div>
   </div>
+`;
+
+const pageTitleHtml = `
+  <div class="page-title">
+    <h2>Tier Calculator</h2>
+    <p>Cloudways Agency Partner Program</p>
+  </div>
+`;
+
+// This is the webpage (HTML) that we will show when someone visits our site.
+const formPage = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cloudways Partner Tier Checker</title>
+  <style>
+    ${pageShell('', `
+      .card {
+        background: white;
+        padding: 48px 40px;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: #6b2d8c;
+        background: #f3ecfa;
+        padding: 6px 14px;
+        border-radius: 20px;
+        margin-bottom: 16px;
+      }
+      h1 { margin: 0 0 8px; font-size: 22px; color: #1a1a2e; }
+      p.sub { color: #666; font-size: 14px; margin-bottom: 28px; }
+      input {
+        padding: 14px;
+        font-size: 16px;
+        width: 100%;
+        border: 2px solid #e5e0f0;
+        border-radius: 8px;
+        text-align: center;
+      }
+      input:focus { outline: none; border-color: #ff7a59; }
+      button {
+        margin-top: 16px;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
+        width: 100%;
+        background: #ff7a59;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:hover { background: #f0673f; }
+      button:disabled { opacity: 0.7; cursor: default; }
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,0.5);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+        margin-right: 8px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    `)}
+  </style>
+</head>
+<body>
+  ${topLogoHtml}
+  ${pageTitleHtml}
   <div class="card">
     <span class="badge">CLOUDWAYS AGENCY PARTNERS</span>
     <h1>Agency Partner Program Tier Checker</h1>
-    <p>Enter your monthly hosting spend to see your partner tier &amp; benefits</p>
-    <form method="POST" action="/check">
+    <p class="sub">Enter your monthly hosting spend to see your partner tier &amp; benefits</p>
+    <form method="POST" action="/check" id="tierForm">
       <input type="number" name="spend" placeholder="e.g. 250" required />
-      <button type="submit">Check My Tier</button>
+      <button type="submit" id="submitBtn">Check My Tier</button>
     </form>
   </div>
+  <script>
+    document.getElementById('tierForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Calculating...';
+      setTimeout(() => e.target.submit(), 800);
+    });
+  </script>
 </body>
 </html>
 `;
@@ -105,6 +164,7 @@ function getTier(spend) {
   if (spend > 2500) {
     return {
       tier: 'Platinum',
+      icon: '💎',
       color: '#8e44ad',
       benefits: [
         'Premium technical support (senior engineers)',
@@ -120,6 +180,7 @@ function getTier(spend) {
   } else if (spend >= 500) {
     return {
       tier: 'Gold',
+      icon: '🥇',
       color: '#f1c40f',
       benefits: [
         'Advanced technical support',
@@ -134,6 +195,7 @@ function getTier(spend) {
   } else if (spend >= 100) {
     return {
       tier: 'Silver',
+      icon: '🥈',
       color: '#95a5a6',
       benefits: [
         'Advanced technical support',
@@ -146,6 +208,7 @@ function getTier(spend) {
   } else {
     return {
       tier: 'Bronze',
+      icon: '🥉',
       color: '#cd7f32',
       benefits: [
         'Standard technical support',
@@ -158,22 +221,48 @@ function getTier(spend) {
   }
 }
 
+// Works out how close the spend is to the NEXT tier up, so we can show
+// a progress bar. Returns null when already at the top tier (Platinum).
+function getProgress(spend, tier) {
+  if (tier === 'Bronze') {
+    return { percent: Math.min(100, (spend / 100) * 100), remaining: 100 - spend, nextTier: 'Silver' };
+  } else if (tier === 'Silver') {
+    return { percent: Math.min(100, ((spend - 100) / (500 - 100)) * 100), remaining: 500 - spend, nextTier: 'Gold' };
+  } else if (tier === 'Gold') {
+    return { percent: Math.min(100, ((spend - 500) / (2500 - 500)) * 100), remaining: 2501 - spend, nextTier: 'Platinum' };
+  }
+  return null; // Platinum -- already at the top!
+}
+
 // createServer() sets up our server, and tells it what to do
 // every time a request comes in.
 const server = http.createServer((req, res) => {
   if (req.method === 'GET' && req.url === '/') {
-    // Someone just opened the page normally -> show the form.
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(formPage);
+  } else if (req.method === 'GET' && req.url === '/check') {
+    res.writeHead(302, { Location: '/' });
+    res.end();
   } else if (req.method === 'POST' && req.url === '/check') {
-    // The form was submitted. The browser sends the data in small
-    // pieces ("chunks") -- we collect them all before reading it.
     let body = '';
     req.on('data', (chunk) => { body += chunk; });
     req.on('end', () => {
-      // body looks like "spend=250" -- we pull the number out of it.
       const spend = Number(new URLSearchParams(body).get('spend')) || 0;
       const result = getTier(spend);
+      const progress = getProgress(spend, result.tier);
+
+      const progressHtml = progress
+        ? `
+          <div class="progress-wrap">
+            <p class="progress-label">$${progress.remaining} more to reach ${progress.nextTier}</p>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: ${progress.percent}%; background: ${result.color};"></div>
+            </div>
+          </div>
+        `
+        : `<p class="top-tier-msg">🎉 You've reached the top tier!</p>`;
+
+      const shareText = `I'm a Cloudways ${result.tier} tier agency partner! 🎉`;
 
       const resultPage = `
         <!DOCTYPE html>
@@ -181,109 +270,122 @@ const server = http.createServer((req, res) => {
         <head>
           <title>Your Partner Tier</title>
           <style>
-            * { box-sizing: border-box; }
-            body {
-              font-family: 'Segoe UI', Tahoma, sans-serif;
-              margin: 0;
-              min-height: 100vh;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: linear-gradient(135deg, #2d1b69 0%, #6b2d8c 50%, #d94f3d 100%);
-            }
-            .card {
-              background: white;
-              padding: 44px 40px;
-              border-radius: 16px;
-              box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-              max-width: 440px;
-              width: 90%;
-              text-align: center;
-            }
-            .spend { color: #888; font-size: 14px; margin-bottom: 6px; }
-            .tier-badge {
-              display: inline-block;
-              font-size: 28px;
-              font-weight: 800;
-              color: white;
-              background: ${result.color};
-              padding: 10px 28px;
-              border-radius: 30px;
-              margin-bottom: 28px;
-            }
-            ul { text-align: left; list-style: none; padding: 0; margin: 0; }
-            li {
-              padding: 10px 0;
-              border-bottom: 1px solid #f0f0f0;
-              color: #333;
-              font-size: 15px;
-            }
-            li:last-child { border-bottom: none; }
-            li::before { content: "✓ "; color: ${result.color}; font-weight: 700; }
-            .connect-btn {
-              display: block;
-              margin-top: 28px;
-              padding: 14px;
-              background: #ff7a59;
-              color: white !important;
-              border-radius: 8px;
-              font-weight: 600;
-              font-size: 15px;
-              text-decoration: none;
-            }
-            .connect-btn:hover { background: #f0673f; }
-            .msg-box {
-              width: 100%;
-              margin-top: 24px;
-              padding: 12px;
-              font-size: 14px;
-              font-family: inherit;
-              border: 2px solid #e5e0f0;
-              border-radius: 8px;
-              resize: vertical;
-              min-height: 70px;
-            }
-            .msg-box:focus { outline: none; border-color: #ff7a59; }
-            a {
-              display: inline-block;
-              margin-top: 24px;
-              color: #ff7a59;
-              text-decoration: none;
-              font-weight: 600;
-              font-size: 14px;
-            }
-            a:hover { text-decoration: underline; }
-            .top-logo {
-              position: fixed;
-              top: 24px;
-              left: 24px;
-              display: flex;
-              align-items: center;
-              gap: 10px;
-            }
-            .top-logo .logo-text-block { display: flex; flex-direction: column; line-height: 1.1; }
-            .top-logo .logo-main { font-size: 17px; font-weight: 800; color: white; letter-spacing: 0.5px; }
-            .top-logo .logo-sub { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.75); letter-spacing: 0.3px; }
+            ${pageShell('', `
+              .card {
+                background: white;
+                padding: 44px 40px;
+                border-radius: 16px;
+                box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+                max-width: 440px;
+                width: 90%;
+                text-align: center;
+                animation: fadeInUp 0.5s ease-out;
+              }
+              @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(16px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+              .spend { color: #888; font-size: 14px; margin-bottom: 6px; }
+              .tier-icon { font-size: 40px; margin-bottom: 4px; }
+              .tier-badge {
+                display: inline-block;
+                font-size: 28px;
+                font-weight: 800;
+                color: white;
+                background: ${result.color};
+                padding: 10px 28px;
+                border-radius: 30px;
+                margin-bottom: 20px;
+              }
+              .progress-wrap { margin-bottom: 24px; }
+              .progress-label { font-size: 13px; color: #666; margin-bottom: 8px; }
+              .progress-track { background: #f0f0f0; border-radius: 10px; height: 10px; overflow: hidden; }
+              .progress-fill { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
+              .top-tier-msg { font-size: 14px; color: #8e44ad; font-weight: 600; margin-bottom: 24px; }
+              ul { text-align: left; list-style: none; padding: 0; margin: 0; }
+              li { padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #333; font-size: 15px; }
+              li:last-child { border-bottom: none; }
+              li::before { content: "✓ "; color: ${result.color}; font-weight: 700; }
+              .connect-btn {
+                display: block;
+                margin-top: 24px;
+                padding: 14px;
+                background: #ff7a59;
+                color: white !important;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 15px;
+                text-decoration: none;
+              }
+              .connect-btn:hover { background: #f0673f; }
+              .share-btn {
+                display: block;
+                width: 100%;
+                margin-top: 10px;
+                padding: 12px;
+                background: white;
+                color: #6b2d8c;
+                border: 2px solid #e5e0f0;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 14px;
+                cursor: pointer;
+              }
+              .share-btn:hover { border-color: #6b2d8c; }
+              a.back { display: inline-block; margin-top: 20px; color: #ff7a59; text-decoration: none; font-weight: 600; font-size: 14px; }
+              .confetti {
+                position: fixed;
+                top: -10px;
+                width: 8px;
+                height: 8px;
+                opacity: 0.9;
+                animation: fall linear forwards;
+              }
+              @keyframes fall {
+                to { transform: translateY(110vh) rotate(360deg); opacity: 0.3; }
+              }
+            `)}
           </style>
         </head>
         <body>
-          <div class="top-logo">
-            <svg width="26" height="19" viewBox="0 0 28 20"><path d="M7 16C3.5 16 1 13.5 1 10.5C1 7.8 3 5.6 5.6 5.2C6.4 2.5 8.9 0.7 11.8 0.7C14.9 0.7 17.5 2.8 18.1 5.7C21 6 23.3 8.4 23.3 11.3C23.3 14 21 16 18.3 16H7Z" fill="white"/></svg>
-            <div class="logo-text-block">
-              <span class="logo-main">CLOUDWAYS</span>
-              <span class="logo-sub">by DigitalOcean</span>
-            </div>
-          </div>
+          ${topLogoHtml}
+          ${pageTitleHtml}
           <div class="card">
+            <div class="tier-icon">${result.icon}</div>
             <p class="spend">Monthly spend: $${spend}</p>
             <div class="tier-badge">${result.tier}</div>
+            ${progressHtml}
             <ul>
               ${result.benefits.map((b) => `<li>${b}</li>`).join('')}
             </ul>
             <a href="https://calendly.com/atahir-yts/let-s-connect" target="_blank" class="connect-btn">Connect with Partner Manager</a>
+            <button class="share-btn" id="shareBtn">Share My Tier</button>
             <br />
-            <a href="/">&larr; Check another amount</a>
+            <a class="back" href="/">&larr; Check another amount</a>
           </div>
+          <script>
+            document.getElementById('shareBtn').addEventListener('click', function () {
+              navigator.clipboard.writeText(${JSON.stringify(shareText)}).then(() => {
+                this.textContent = 'Copied!';
+                setTimeout(() => { this.textContent = 'Share My Tier'; }, 1500);
+              });
+            });
+
+            const isPlatinum = ${result.tier === 'Platinum'};
+            if (isPlatinum) {
+              const colors = ['#ff7a59', '#f1c40f', '#8e44ad', '#6b2d8c', 'white'];
+              for (let i = 0; i < 60; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti';
+                piece.style.left = Math.random() * 100 + 'vw';
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+                piece.style.animationDelay = (Math.random() * 0.5) + 's';
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 4500);
+              }
+            }
+          </script>
         </body>
         </html>
       `;

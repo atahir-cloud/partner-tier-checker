@@ -76,14 +76,7 @@ function pageShell(extraStyles = '') {
     }
     .apply-btn { background: white; color: #6b2d8c; }
     .directory-btn { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.4); }
-    .contact-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 12px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 16px;
-    }
+    .contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; }
     .contact-grid .item { color: rgba(255,255,255,0.9); font-size: 12px; }
     .contact-grid .item strong { display: block; color: white; font-size: 13px; margin-bottom: 3px; }
     ${extraStyles}
@@ -121,10 +114,9 @@ const footerHtml = `
       <a class="directory-btn" href="https://www.cloudways.com/en/agency-partner-directory.php" target="_blank">View Agency Directory</a>
     </div>
     <div class="contact-grid">
-      <div class="item"><strong>Technical Support</strong>Live Chat or Support Ticket</div>
       <div class="item"><strong>Billing Team</strong>billing@cloudways.com</div>
       <div class="item"><strong>Success Manager</strong>success@cloudways.com</div>
-      <div class="item"><strong>Partner Marketing Manager</strong>agencies@cloudways.com</div>
+      <div class="item"><strong>Partner Manager</strong>agencies@cloudways.com</div>
     </div>
   </div>
 `;
@@ -304,7 +296,7 @@ function getProgress(spend, tier) {
 // every time a request comes in.
 const server = http.createServer((req, res) => {
   if (req.method === 'GET' && req.url === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(formPage);
   } else if (req.method === 'GET' && req.url === '/check') {
     res.writeHead(302, { Location: '/' });
@@ -320,7 +312,7 @@ const server = http.createServer((req, res) => {
       const progressHtml = progress
         ? `
           <div class="progress-wrap">
-            <p class="progress-label">$${progress.remaining} more to reach ${progress.nextTier}</p>
+            <p class="progress-label">🎯 <strong>$${progress.remaining}</strong> away from <strong>${progress.nextTier}</strong></p>
             <div class="progress-track">
               <div class="progress-fill" style="width: ${progress.percent}%; background: ${result.color};"></div>
             </div>
@@ -363,8 +355,15 @@ const server = http.createServer((req, res) => {
                 border-radius: 30px;
                 margin-bottom: 20px;
               }
-              .progress-wrap { margin-bottom: 24px; }
-              .progress-label { font-size: 13px; color: #666; margin-bottom: 8px; }
+              .progress-wrap {
+                margin-bottom: 24px;
+                background: linear-gradient(135deg, ${result.color}18, ${result.color}08);
+                border: 1px solid ${result.color}40;
+                border-radius: 12px;
+                padding: 14px 16px;
+              }
+              .progress-label { font-size: 14px; color: #444; margin: 0 0 10px; }
+              .progress-label strong { color: ${result.color}; }
               .progress-track { background: #f0f0f0; border-radius: 10px; height: 10px; overflow: hidden; }
               .progress-fill { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
               .top-tier-msg { font-size: 14px; color: #8e44ad; font-weight: 600; margin-bottom: 24px; }
@@ -374,13 +373,17 @@ const server = http.createServer((req, res) => {
               li::before { content: "✓ "; color: ${result.color}; font-weight: 700; }
               .connect-btn {
                 display: block;
+                width: 100%;
                 margin-top: 24px;
                 padding: 14px;
                 background: #ff7a59;
-                color: white !important;
+                color: white;
+                border: none;
                 border-radius: 8px;
                 font-weight: 600;
                 font-size: 15px;
+                font-family: inherit;
+                cursor: pointer;
                 text-decoration: none;
               }
               .connect-btn:hover { background: #f0673f; }
@@ -413,6 +416,8 @@ const server = http.createServer((req, res) => {
               }
             `)}
           </style>
+          <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+          <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
         </head>
         <body>
           ${bgShapesHtml}
@@ -426,7 +431,7 @@ const server = http.createServer((req, res) => {
             <ul>
               ${result.benefits.map((b) => `<li>${b}</li>`).join('')}
             </ul>
-            <a href="https://calendly.com/atahir-yts/let-s-connect" target="_blank" class="connect-btn">Connect with Partner Manager</a>
+            <button type="button" class="connect-btn" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/atahir-yts/let-s-connect'}); return false;">Connect with Partner Manager</button>
             <button class="share-btn" id="shareBtn">Share My Tier</button>
             <br />
             <a class="back" href="/">&larr; Check another amount</a>
@@ -459,7 +464,7 @@ const server = http.createServer((req, res) => {
         </html>
       `;
 
-      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(resultPage);
     });
   } else {

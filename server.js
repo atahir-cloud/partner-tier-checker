@@ -65,9 +65,27 @@ const formPage = `
       transition: transform 0.1s;
     }
     button:hover { background: #f0673f; }
+    .top-logo {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .top-logo .logo-text-block { display: flex; flex-direction: column; line-height: 1.1; }
+    .top-logo .logo-main { font-size: 17px; font-weight: 800; color: white; letter-spacing: 0.5px; }
+    .top-logo .logo-sub { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.75); letter-spacing: 0.3px; }
   </style>
 </head>
 <body>
+  <div class="top-logo">
+    <svg width="26" height="19" viewBox="0 0 28 20"><path d="M7 16C3.5 16 1 13.5 1 10.5C1 7.8 3 5.6 5.6 5.2C6.4 2.5 8.9 0.7 11.8 0.7C14.9 0.7 17.5 2.8 18.1 5.7C21 6 23.3 8.4 23.3 11.3C23.3 14 21 16 18.3 16H7Z" fill="white"/></svg>
+    <div class="logo-text-block">
+      <span class="logo-main">CLOUDWAYS</span>
+      <span class="logo-sub">by DigitalOcean</span>
+    </div>
+  </div>
   <div class="card">
     <span class="badge">CLOUDWAYS AGENCY PARTNERS</span>
     <h1>Partner Tier Checker</h1>
@@ -202,6 +220,18 @@ const server = http.createServer((req, res) => {
             }
             li:last-child { border-bottom: none; }
             li::before { content: "✓ "; color: ${result.color}; font-weight: 700; }
+            .connect-btn {
+              display: block;
+              margin-top: 28px;
+              padding: 14px;
+              background: #ff7a59;
+              color: white !important;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 15px;
+              text-decoration: none;
+            }
+            .connect-btn:hover { background: #f0673f; }
             a {
               display: inline-block;
               margin-top: 24px;
@@ -211,15 +241,35 @@ const server = http.createServer((req, res) => {
               font-size: 14px;
             }
             a:hover { text-decoration: underline; }
+            .top-logo {
+              position: fixed;
+              top: 24px;
+              left: 24px;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+            .top-logo .logo-text-block { display: flex; flex-direction: column; line-height: 1.1; }
+            .top-logo .logo-main { font-size: 17px; font-weight: 800; color: white; letter-spacing: 0.5px; }
+            .top-logo .logo-sub { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.75); letter-spacing: 0.3px; }
           </style>
         </head>
         <body>
+          <div class="top-logo">
+            <svg width="26" height="19" viewBox="0 0 28 20"><path d="M7 16C3.5 16 1 13.5 1 10.5C1 7.8 3 5.6 5.6 5.2C6.4 2.5 8.9 0.7 11.8 0.7C14.9 0.7 17.5 2.8 18.1 5.7C21 6 23.3 8.4 23.3 11.3C23.3 14 21 16 18.3 16H7Z" fill="white"/></svg>
+            <div class="logo-text-block">
+              <span class="logo-main">CLOUDWAYS</span>
+              <span class="logo-sub">by DigitalOcean</span>
+            </div>
+          </div>
           <div class="card">
             <p class="spend">Monthly spend: $${spend}</p>
             <div class="tier-badge">${result.tier}</div>
             <ul>
               ${result.benefits.map((b) => `<li>${b}</li>`).join('')}
             </ul>
+            <a href="mailto:agencies@cloudways.com?subject=Connect%20with%20Partner%20Manager%20-%20${result.tier}%20Tier" class="connect-btn">Connect with Partner Manager</a>
+            <br />
             <a href="/">&larr; Check another amount</a>
           </div>
         </body>

@@ -136,7 +136,7 @@ function pageShell(extraStyles = '') {
     @media (min-width: 1150px) {
       .testimonials-wrap {
         position: fixed;
-        right: 24px;
+        right: 90px;
         top: 100px;
         width: 240px;
         max-width: 240px;

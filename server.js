@@ -133,6 +133,22 @@ function pageShell(extraStyles = '') {
       font-size: 12px;
       margin: 2px 0 0;
     }
+    @media (min-width: 1150px) {
+      .testimonials-wrap {
+        position: fixed;
+        right: 24px;
+        top: 100px;
+        width: 240px;
+        max-width: 240px;
+        text-align: left;
+        margin: 0;
+        z-index: 1;
+      }
+      .testimonials-heading { text-align: left; font-size: 13px; }
+      .testimonials-row { flex-direction: column; gap: 10px; }
+      .testimonial-card { max-width: 100%; padding: 16px 14px; }
+      .testimonial-card .t-quote { font-size: 12.5px; }
+    }
     ${extraStyles}
   `;
 }
